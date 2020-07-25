@@ -3,7 +3,7 @@ package server.mecs.serverspawn
 import org.bukkit.Location
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
-import org.bukkit.configuration.file.FileConfiguration
+import org.bukkit.command.ConsoleCommandSender
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
@@ -12,7 +12,6 @@ import org.bukkit.plugin.java.JavaPlugin
 
 
 class ServerSpawn : JavaPlugin(), Listener {
-    private var config: FileConfiguration? = null
     var s = false
     var x = 0
     var y = 0
@@ -24,7 +23,6 @@ class ServerSpawn : JavaPlugin(), Listener {
         // Plugin startup logic
         saveDefaultConfig()
         reloadConfig()
-        config = getConfig()
         x = config.getInt("x", 0)
         y = config.getInt("y", 0)
         z = config.getInt("z", 0)
@@ -43,13 +41,16 @@ class ServerSpawn : JavaPlugin(), Listener {
 
     override fun onCommand(sender: CommandSender, command: Command, label: String?, args: Array<String>): Boolean {
         if (command.name == "sspawn") {
-            if (!sender.isOp) {
-                sender.sendMessage("§c§lあなたにはこのこまんどを実行する権限がありません")
-                return true
+
+            val p = sender as Player
+
+            if (sender is ConsoleCommandSender) {
+                sender.sendMessage("This command cannot be executed from the console.")
+                return false
             }
-            if (sender is Player) {
-                if (args[0] == "set") {
-                    val p = sender
+
+            if (args[0] == "set") {
+                if (p.hasPermission("sspawn.admin")) {
                     config!!["x"] = p.location.blockX
                     config!!["y"] = p.location.blockY
                     config!!["z"] = p.location.blockZ
@@ -58,30 +59,45 @@ class ServerSpawn : JavaPlugin(), Listener {
                     reloadConfig()
                     sender.sendMessage("座標を保存しました")
                     return true
+                } else {
+                    p.sendMessage("§cThis command can only be executed by a player with <sspawn.admin> privileges.")
                 }
             }
+
             if (args.size != 1) {
-                sender.sendMessage("/sspawn set : 実行しているプレイヤーが立っている場所をスポーン地点に設定します")
-                sender.sendMessage("/sspawn <x> <y> <z> : プレイヤーがログイン時にスポーンする座標を設定します")
-                sender.sendMessage("/sspawn reload : 設定値をリロードします")
+                p.sendMessage("/sspawn set : 実行しているプレイヤーが立っている場所をスポーン地点に設定します")
+                p.sendMessage("/sspawn <x> <y> <z> : プレイヤーがログイン時にスポーンする座標を設定します")
+                p.sendMessage("/sspawn reload : 設定値をリロードします")
                 return true
             }
             if (args[0] == "on") {
-                config!!["s"] = true
-                saveConfig()
-                reloadConfig()
-                sender.sendMessage("serverspawnを有効化しました")
+                if (p.hasPermission("sspawn.admin")) {
+                    config!!["s"] = true
+                    saveConfig()
+                    reloadConfig()
+                    sender.sendMessage("serverspawnを有効化しました")
+                } else {
+                    p.sendMessage("§cThis command can only be executed by a player with <sspawn.admin> privileges.")
+                }
                 return true
             }
             if (args[0] == "off") {
-                config!!["s"] = false
-                saveConfig()
-                reloadConfig()
-                sender.sendMessage("serverspawnを無効化しました")
+                if (p.hasPermission("sspawn.admin")) {
+                    config!!["s"] = false
+                    saveConfig()
+                    reloadConfig()
+                    sender.sendMessage("serverspawnを無効化しました")
+                } else {
+                    p.sendMessage("§cThis command can only be executed by a player with <sspawn.admin> privileges.")
+                }
                 return true
             }
             if (args[0] == "reload") {
-                reloadConfig()
+                if (p.hasPermission("sspawn.admin")) {
+                    reloadConfig()
+                } else {
+                    p.sendMessage("§cThis command can only be executed by a player with <sspawn.admin> privileges.")
+                }
                 return true
             }
         }
