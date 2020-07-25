@@ -1,3 +1,5 @@
 name: ServerSpawn
 version: ${project.version}
 main: server.mecs.serverspawn.ServerSpawn
+commands:
+  sspawn:
