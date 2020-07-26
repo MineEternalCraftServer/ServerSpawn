@@ -84,6 +84,7 @@ class ServerSpawn : JavaPlugin(), Listener {
                     config["z"] = p.location.z
                     config["w"] = p.location.world.name
                     saveConfig()
+                    l = p.location
                     sender.sendMessage("座標を保存しました")
                     return true
                 }
