@@ -3,6 +3,7 @@ package server.mecs.serverspawn
 import org.bukkit.Location
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
+import org.bukkit.command.ConsoleCommandSender
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
@@ -38,60 +39,75 @@ class ServerSpawn : JavaPlugin(), Listener {
     }
 
     override fun onCommand(sender: CommandSender, command: Command, label: String?, args: Array<String>): Boolean {
-        if (command.name == "sspawn") {
-            if (!sender.isOp) {
-                sender.sendMessage("§c§lあなたにはこのこまんどを実行する権限がありません")
-                return true
-            }
-            if (args.size != 1) {
-                sender.sendMessage("/sspawn set : 実行しているプレイヤーが立っている場所をスポーン地点に設定します(consoleからの実行は不可能)")
-                sender.sendMessage("/sspawn <x> <y> <z> : プレイヤーがログイン時にスポーンする座標を設定します")
-                sender.sendMessage("/sspawn reload : 設定値をリロードします")
-                return true
-            }
-            if (args[0] == "on") {
+        val p = sender as Player
+
+        if (sender is ConsoleCommandSender) {
+            sender.sendMessage("This command cannot be executed from the console.")
+            return false
+        }
+
+        if (args.size != 1) {
+            p.sendMessage("/sspawn set : 実行しているプレイヤーが立っている場所をスポーン地点に設定します(consoleからの実行は不可能)")
+            p.sendMessage("/sspawn <x> <y> <z> : プレイヤーがログイン時にスポーンする座標を設定します")
+            p.sendMessage("/sspawn reload : 設定値をリロードします")
+            return true
+        }
+
+        if (args[0] == "on") {
+            if (p.hasPermission("sspawn.admin")) {
                 if (!(s)) {
                     config["s"] = true
                     saveConfig()
                     s = true
-                    sender.sendMessage("serverspawnを有効化しました")
+                    p.sendMessage("serverspawnを有効化しました")
                     return true
                 }
-                sender.sendMessage("onになっています")
+                p.sendMessage("onになっています")
                 return true
+            } else {
+                p.sendMessage("§cThis command can only be executed by a player with <sspawn.admin> privileges.")
             }
-            if (args[0] == "off") {
+        }
+
+        if (args[0] == "off") {
+            if (p.hasPermission("sspawn.admin")) {
                 if (s) {
                     config["s"] = false
                     saveConfig()
                     s = false
-                    sender.sendMessage("serverspawnを無効化しました")
+                    p.sendMessage("serverspawnを無効化しました")
                     return true
                 }
-                sender.sendMessage("offになっています")
+                p.sendMessage("offになっています")
                 return true
+            } else {
+                p.sendMessage("§cThis command can only be executed by a player with <sspawn.admin> privileges.")
             }
-            if (args[0] == "reload") {
+        }
+
+        if (args[0] == "reload") {
+            if (p.hasPermission("sspawn.admin")) {
                 reloadConfig()
-                sender.sendMessage("リロード完了")
+                p.sendMessage("リロード完了")
                 return true
+            } else {
+                p.sendMessage("§cThis command can only be executed by a player with <sspawn.admin> privileges.")
             }
-            if (args[0] == "set") {
-                if (sender is Player) {
-                    val p = sender
-                    config["x"] = p.location.x
-                    config["y"] = p.location.y
-                    config["z"] = p.location.z
-                    config["w"] = p.location.world.name
-                    saveConfig()
-                    l = p.location
-                    sender.sendMessage("座標を保存しました")
-                    return true
-                }
-                sender.sendMessage("consoleからの実行はできません")
+        }
+        
+        if (args[0] == "set") {
+            if (p.hasPermission("sspawn.admin")) {
+                config["x"] = p.location.x
+                config["y"] = p.location.y
+                config["z"] = p.location.z
+                config["w"] = p.location.world.name
+                saveConfig()
+                l = p.location
+                p.sendMessage("座標を保存しました")
                 return true
+            } else {
+                p.sendMessage("§cThis command can only be executed by a player with <sspawn.admin> privileges.")
             }
-            return true
         }
         return true
     }
