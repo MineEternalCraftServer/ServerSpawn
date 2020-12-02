@@ -6,6 +6,7 @@ import org.bukkit.command.CommandSender
 import org.bukkit.command.ConsoleCommandSender
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
+import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.plugin.java.JavaPlugin
@@ -112,12 +113,11 @@ class ServerSpawn : JavaPlugin(), Listener {
         return true
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.LOWEST)
     fun spawn(e: PlayerJoinEvent) {
         if (s) {
             val p = e.player
             p.teleport(l)
-            return
         }
     }
 }
